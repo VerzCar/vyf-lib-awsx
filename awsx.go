@@ -85,7 +85,27 @@ func (s *service) DecodeAccessToken(
 		return nil, err
 	}
 
-	jwtToken := &JWTToken{token}
+	jwtToken := &JWTToken{
+		Issuer: token.Issuer(),
+		PrivateClaims: struct {
+			AuthTime  string
+			ClientId  string
+			EventId   string
+			OriginJti string
+			Scope     string
+			TokenUse  string
+			Username  string
+		}{
+			AuthTime:  (token.PrivateClaims()["auth_time"]).(string),
+			ClientId:  (token.PrivateClaims()["client_id"]).(string),
+			EventId:   (token.PrivateClaims()["event_id"]).(string),
+			OriginJti: (token.PrivateClaims()["origin_jti"]).(string),
+			Scope:     (token.PrivateClaims()["scope"]).(string),
+			TokenUse:  (token.PrivateClaims()["token_use"]).(string),
+			Username:  (token.PrivateClaims()["username"]).(string),
+		},
+		Subject: token.Subject(),
+	}
 
 	err = verifyJWTClaims(jwtToken, reqOptions)
 
@@ -97,29 +117,25 @@ func (s *service) DecodeAccessToken(
 }
 
 func verifyJWTClaims(token *JWTToken, reqOptions *Request) error {
-	if token.Issuer() != formattedCognitoURL {
+	if token.Issuer != formattedCognitoURL {
 		return fmt.Errorf(
 			"token issuer invalid: issuer %s <> pubKey URL %s",
-			token.Issuer(),
+			token.Issuer,
 			formattedCognitoURL,
 		)
 	}
 
-	tokenUse := token.PrivateClaims()["token_use"]
-
-	if tokenUse != "access" {
+	if token.PrivateClaims.TokenUse != "access" {
 		fmt.Errorf(
 			"token use invalid: token use %s <> access",
-			tokenUse,
+			token.PrivateClaims.TokenUse,
 		)
 	}
 
-	clientId := token.PrivateClaims()["client_id"]
-
-	if clientId != reqOptions.appClientID {
+	if token.PrivateClaims.ClientId != reqOptions.appClientID {
 		fmt.Errorf(
 			"token client id invalid: token use %s <> %s",
-			tokenUse,
+			token.PrivateClaims.ClientId,
 			reqOptions.appClientID,
 		)
 	}
