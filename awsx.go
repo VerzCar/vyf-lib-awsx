@@ -23,6 +23,9 @@ type service struct {
 }
 
 const cognitoPubKeyURL = "https://cognito-idp.%s.amazonaws.com/%s/.well-known/jwks.json"
+
+var formattedCognitoPubKeyURL string
+
 const publicKeyRefreshIntervall = 2880 // minutes = 2 days
 
 type Option func(bd *Request)
@@ -38,10 +41,10 @@ func NewAuthService(
 	auth := initCognitoClient(options.appClientID, options.userPoolID)
 	jwkCache := jwk.NewCache(context.Background())
 
-	formattedURL := fmt.Sprintf(cognitoPubKeyURL, options.awsDefaultRegion, options.userPoolID)
+	formattedCognitoPubKeyURL = fmt.Sprintf(cognitoPubKeyURL, options.awsDefaultRegion, options.userPoolID)
 
 	if err := jwkCache.Register(
-		formattedURL,
+		formattedCognitoPubKeyURL,
 		jwk.WithMinRefreshInterval(publicKeyRefreshIntervall*time.Minute),
 	); err != nil {
 		return nil, err
@@ -64,7 +67,7 @@ func (s *service) DecodeAccessToken(
 	*JWTToken,
 	error,
 ) {
-	keySet, err := s.jwkCache.Get(ctx, cognitoPubKeyURL)
+	keySet, err := s.jwkCache.Get(ctx, formattedCognitoPubKeyURL)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +88,34 @@ func (s *service) DecodeAccessToken(
 
 	jwtToken := &JWTToken{token}
 
+	//err = verifyJWTClaims(jwtToken)
+	//
+	//if err != nil {
+	//	return nil, err
+	//}
+
 	return jwtToken, nil
+}
+
+func verifyJWTClaims(token *JWTToken) error {
+	if token.Issuer() != formattedCognitoPubKeyURL {
+		return fmt.Errorf(
+			"token issuer invalid: issuer %s <> pubKey URL %s",
+			token.Issuer(),
+			formattedCognitoPubKeyURL,
+		)
+	}
+
+	tokenUse, _ := token.Get("cognito:token_use")
+
+	if tokenUse != "access" {
+		fmt.Errorf(
+			"token use invalid: token use %s <> access",
+			tokenUse,
+		)
+	}
+
+	return nil
 }
 
 func (s *service) applyOptions(options []Option) *Request {
