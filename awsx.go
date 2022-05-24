@@ -51,8 +51,9 @@ func NewAuthService(
 	}
 
 	return &service{
-		auth: auth,
-		opts: opts,
+		auth:     auth,
+		jwkCache: jwkCache,
+		opts:     opts,
 	}, nil
 }
 
