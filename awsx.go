@@ -68,6 +68,8 @@ func (s *service) DecodeAccessToken(
 	*JWTToken,
 	error,
 ) {
+	reqOptions := s.applyOptions(options)
+
 	keySet, err := s.jwkCache.Get(ctx, formattedCognitoPubKeyURL)
 	if err != nil {
 		return nil, err
@@ -82,23 +84,18 @@ func (s *service) DecodeAccessToken(
 		return nil, err
 	}
 
-	username, _ := token.Get("cognito:username")
-
-	fmt.Printf("The username: %v\n", username)
-	fmt.Println(token)
-
 	jwtToken := &JWTToken{token}
 
-	//err = verifyJWTClaims(jwtToken)
-	//
-	//if err != nil {
-	//	return nil, err
-	//}
+	err = verifyJWTClaims(jwtToken, reqOptions)
+
+	if err != nil {
+		return nil, err
+	}
 
 	return jwtToken, nil
 }
 
-func verifyJWTClaims(token *JWTToken) error {
+func verifyJWTClaims(token *JWTToken, reqOptions *Request) error {
 	if token.Issuer() != formattedCognitoPubKeyURL {
 		return fmt.Errorf(
 			"token issuer invalid: issuer %s <> pubKey URL %s",
@@ -107,12 +104,22 @@ func verifyJWTClaims(token *JWTToken) error {
 		)
 	}
 
-	tokenUse, _ := token.Get("cognito:token_use")
+	tokenUse := token.PrivateClaims()["token_use"]
 
 	if tokenUse != "access" {
 		fmt.Errorf(
 			"token use invalid: token use %s <> access",
 			tokenUse,
+		)
+	}
+
+	clientId := token.PrivateClaims()["client_id"]
+
+	if clientId != reqOptions.appClientID {
+		fmt.Errorf(
+			"token client id invalid: token use %s <> %s",
+			tokenUse,
+			reqOptions.appClientID,
 		)
 	}
 
