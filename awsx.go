@@ -88,7 +88,7 @@ func (s *service) DecodeAccessToken(
 	jwtToken := &JWTToken{
 		Issuer: token.Issuer(),
 		PrivateClaims: struct {
-			AuthTime  string
+			AuthTime  float64
 			ClientId  string
 			EventId   string
 			OriginJti string
@@ -96,7 +96,7 @@ func (s *service) DecodeAccessToken(
 			TokenUse  string
 			Username  string
 		}{
-			AuthTime:  (token.PrivateClaims()["auth_time"]).(string),
+			AuthTime:  (token.PrivateClaims()["auth_time"]).(float64),
 			ClientId:  (token.PrivateClaims()["client_id"]).(string),
 			EventId:   (token.PrivateClaims()["event_id"]).(string),
 			OriginJti: (token.PrivateClaims()["origin_jti"]).(string),

@@ -14,7 +14,7 @@ type JWTToken struct {
 	// Issuer returns the value for "iss" field of the token
 	Issuer        string
 	PrivateClaims struct {
-		AuthTime  string
+		AuthTime  float64
 		ClientId  string
 		EventId   string
 		OriginJti string
