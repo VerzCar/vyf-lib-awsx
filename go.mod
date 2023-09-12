@@ -1,4 +1,4 @@
-module gitlab.vecomentman.com/libs/awsx
+module github.com/VerzCar/vyf-lib-awsx
 
 go 1.18
 
