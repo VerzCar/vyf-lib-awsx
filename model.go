@@ -1,7 +1,5 @@
 package awsx
 
-import "github.com/lestrrat-go/jwx/v2/jwt"
-
 type identityProvider struct {
 	userPoolID       string
 	appClientID      string
@@ -12,7 +10,18 @@ type identityProvider struct {
 type Request struct {
 	identityProvider
 }
-
 type JWTToken struct {
-	jwt.Token
+	// Issuer returns the value for "iss" field of the token
+	Issuer        string
+	PrivateClaims struct {
+		AuthTime  float64
+		ClientId  string
+		EventId   string
+		OriginJti string
+		Scope     string
+		TokenUse  string
+		// Cognito username
+		Username string
+	}
+	Subject string
 }
