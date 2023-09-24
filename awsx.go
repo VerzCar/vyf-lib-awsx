@@ -99,7 +99,7 @@ func (s *service) DecodeAccessToken(
 			AuthTime:  (token.PrivateClaims()["auth_time"]).(float64),
 			ClientId:  (token.PrivateClaims()["client_id"]).(string),
 			EventId:   (token.PrivateClaims()["event_id"]).(string),
-			OriginJti: (token.PrivateClaims()["origin_jti"]).(string),
+			OriginJti: "",
 			Scope:     (token.PrivateClaims()["scope"]).(string),
 			TokenUse:  (token.PrivateClaims()["token_use"]).(string),
 			Username:  (token.PrivateClaims()["username"]).(string),
