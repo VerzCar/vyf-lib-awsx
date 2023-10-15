@@ -29,8 +29,6 @@ var formattedCognitoURL string
 
 const publicKeyRefreshIntervall = 2880 // minutes = 2 days
 
-type AuthOption func(bd *AuthRequestConfig)
-
 // NewAuthService creates a new auth authService.
 // The options for the app client id and user pool id needs to be set.
 // If additional options are given
@@ -151,15 +149,6 @@ func (s *authService) applyOptions(options []AuthOption) *AuthRequestConfig {
 		option(req)
 	}
 	// per request options
-	for _, option := range options {
-		option(req)
-	}
-	return req
-}
-
-func applyAuthOptions(options []AuthOption) *AuthRequestConfig {
-	req := &AuthRequestConfig{}
-
 	for _, option := range options {
 		option(req)
 	}
