@@ -1,15 +1,29 @@
 package awsx
 
-type identityProvider struct {
+type awsIdentityProviderConfig struct {
 	userPoolID       string
 	appClientID      string
 	clientSecret     string
 	awsDefaultRegion string
 }
 
-type Request struct {
-	identityProvider
+type AuthRequestConfig struct {
+	awsIdentityProviderConfig
 }
+
+type awsConfig struct {
+	accessKeyID       string
+	accessKeySecret   string
+	region            string
+	defaultBucketName string
+	uploadTimeout     int
+	defaultBaseURL    string
+}
+
+type S3RequestConfig struct {
+	awsConfig
+}
+
 type JWTToken struct {
 	// Issuer returns the value for "iss" field of the token
 	Issuer        string

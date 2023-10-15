@@ -13,13 +13,13 @@ type Auth struct {
 }
 
 type AuthService interface {
-	DecodeAccessToken(ctx context.Context, accessToken string, options ...Option) (*JWTToken, error)
+	DecodeAccessToken(ctx context.Context, accessToken string, options ...AuthOption) (*JWTToken, error)
 }
 
-type service struct {
+type authService struct {
 	auth     *authClient
 	jwkCache *jwk.Cache
-	opts     []Option
+	opts     []AuthOption
 }
 
 const cognitoURL = "https://cognito-idp.%s.amazonaws.com/%s"
@@ -29,16 +29,16 @@ var formattedCognitoURL string
 
 const publicKeyRefreshIntervall = 2880 // minutes = 2 days
 
-type Option func(bd *Request)
+type AuthOption func(bd *AuthRequestConfig)
 
-// NewAuthService creates a new auth service.
+// NewAuthService creates a new auth authService.
 // The options for the app client id and user pool id needs to be set.
 // If additional options are given
 // this options will be used for the upcoming requests to the aws client.
 func NewAuthService(
-	opts ...Option,
+	opts ...AuthOption,
 ) (AuthService, error) {
-	options := applyOptions(opts)
+	options := applyAuthOptions(opts)
 	auth := initCognitoClient(options.appClientID, options.userPoolID)
 	jwkCache := jwk.NewCache(context.Background())
 
@@ -51,7 +51,7 @@ func NewAuthService(
 		return nil, err
 	}
 
-	return &service{
+	return &authService{
 		auth:     auth,
 		jwkCache: jwkCache,
 		opts:     opts,
@@ -61,10 +61,10 @@ func NewAuthService(
 // DecodeAccessToken of given accessToken and verifies it against the given realm.
 // It converts the JWT sub into the custom claim of the go sso type.
 // Returns the jwt.Token and the SsoClaims representation if successful, otherwise an error.
-func (s *service) DecodeAccessToken(
+func (s *authService) DecodeAccessToken(
 	ctx context.Context,
 	accessToken string,
-	options ...Option,
+	options ...AuthOption,
 ) (
 	*JWTToken,
 	error,
@@ -116,7 +116,7 @@ func (s *service) DecodeAccessToken(
 	return jwtToken, nil
 }
 
-func verifyJWTClaims(token *JWTToken, reqOptions *Request) error {
+func verifyJWTClaims(token *JWTToken, reqOptions *AuthRequestConfig) error {
 	if token.Issuer != formattedCognitoURL {
 		return fmt.Errorf(
 			"token issuer invalid: issuer %s <> pubKey URL %s",
@@ -143,8 +143,8 @@ func verifyJWTClaims(token *JWTToken, reqOptions *Request) error {
 	return nil
 }
 
-func (s *service) applyOptions(options []Option) *Request {
-	req := &Request{}
+func (s *authService) applyOptions(options []AuthOption) *AuthRequestConfig {
+	req := &AuthRequestConfig{}
 
 	// per client options apply first
 	for _, option := range s.opts {
@@ -157,8 +157,8 @@ func (s *service) applyOptions(options []Option) *Request {
 	return req
 }
 
-func applyOptions(options []Option) *Request {
-	req := &Request{}
+func applyAuthOptions(options []AuthOption) *AuthRequestConfig {
+	req := &AuthRequestConfig{}
 
 	for _, option := range options {
 		option(req)
