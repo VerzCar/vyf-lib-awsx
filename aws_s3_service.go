@@ -31,8 +31,6 @@ type s3Service struct {
 	opts []S3Option
 }
 
-type S3Option func(bd *S3RequestConfig)
-
 // NewS3Service creates a new s3 service.
 // If additional options are given
 // this options will be used for the upcoming requests to the aws client.
@@ -87,15 +85,6 @@ func (s *s3Service) applyOptions(options []S3Option) *S3RequestConfig {
 		option(req)
 	}
 	// per request options
-	for _, option := range options {
-		option(req)
-	}
-	return req
-}
-
-func applyS3Options(options []S3Option) *S3RequestConfig {
-	req := &S3RequestConfig{}
-
 	for _, option := range options {
 		option(req)
 	}
