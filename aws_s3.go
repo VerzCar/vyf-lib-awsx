@@ -15,7 +15,6 @@ type s3Client struct {
 func initS3Session(s3Config *S3RequestConfig) *s3Client {
 	cfg, err := config.LoadDefaultConfig(
 		context.TODO(),
-		config.WithDefaultRegion(s3Config.region),
 		config.WithRegion(s3Config.region),
 		config.WithCredentialsProvider(
 			credentials.StaticCredentialsProvider{
