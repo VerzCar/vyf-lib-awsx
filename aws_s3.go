@@ -24,7 +24,18 @@ func initS3Session(s3Config *S3RequestConfig) *s3Client {
 				},
 			},
 		),
+		config.WithEndpointResolverWithOptions(
+			aws.EndpointResolverWithOptionsFunc(
+				func(
+					service, region string,
+					options ...interface{},
+				) (aws.Endpoint, error) {
+					return aws.Endpoint{URL: s3Config.defaultBaseURL}, nil
+				},
+			),
+		),
 	)
+
 	if err != nil {
 		panic(err)
 	}
