@@ -22,6 +22,7 @@ type S3Service interface {
 		bool,
 		error,
 	)
+	ObjectEndpoint(options ...S3Option) string
 }
 
 type s3Service struct {
@@ -71,6 +72,13 @@ func (s *s3Service) Upload(
 	}
 
 	return true, err
+}
+
+// ObjectEndpoint build the endpoint on which the object of the bucket can be accessed.
+// This can be used to add some path behind the endpoint of the object itself.
+func (s *s3Service) ObjectEndpoint(options ...S3Option) string {
+	reqOptions := s.applyOptions(options)
+	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com", reqOptions.bucketName, reqOptions.region)
 }
 
 func (s *s3Service) applyOptions(options []S3Option) *S3RequestConfig {
