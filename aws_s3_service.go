@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"io"
 )
 
@@ -16,7 +15,6 @@ type S3 struct {
 type S3Service interface {
 	Upload(
 		ctx context.Context,
-		bucketName string,
 		path string,
 		body io.Reader,
 		options ...S3Option,
@@ -48,7 +46,6 @@ func NewS3Service(
 
 func (s *s3Service) Upload(
 	ctx context.Context,
-	bucketName string,
 	path string,
 	body io.Reader,
 	options ...S3Option,
@@ -58,21 +55,20 @@ func (s *s3Service) Upload(
 ) {
 	reqOptions := s.applyOptions(options)
 
-	res, err := s.s3.PutObject(
+	_, err := s.s3.PutObject(
 		ctx, &s3.PutObjectInput{
-			Bucket: aws.String(bucketName),
-			Key:    aws.String(reqOptions.defaultBaseURL + path),
+			Bucket: aws.String(reqOptions.bucketName),
+			Key:    aws.String(path),
 			Body:   body,
 		},
 	)
 	if err != nil {
 		fmt.Printf(
-			"Couldn't upload file %v to %v:%v. Here's why: %v\n",
-			body, bucketName, path, err,
+			"Couldn't upload file %v to %v:%v. error: %v\n",
+			body, reqOptions.bucketName, path, err,
 		)
+		return true, err
 	}
-
-	fmt.Printf("response %s", awsutil.Prettify(res))
 
 	return true, err
 }

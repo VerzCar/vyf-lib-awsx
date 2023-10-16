@@ -29,9 +29,9 @@ func Region(region string) S3Option {
 	}
 }
 
-func DefaultBucketName(name string) S3Option {
+func BucketName(name string) S3Option {
 	return func(req *S3RequestConfig) {
-		req.defaultBucketName = name
+		req.bucketName = name
 	}
 }
 

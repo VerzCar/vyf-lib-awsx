@@ -1,9 +1,7 @@
 package awsx
 
 import (
-	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
@@ -13,31 +11,28 @@ type s3Client struct {
 }
 
 func initS3Session(s3Config *S3RequestConfig) *s3Client {
-	cfg, err := config.LoadDefaultConfig(
-		context.TODO(),
-		config.WithRegion(s3Config.region),
-		config.WithCredentialsProvider(
-			credentials.StaticCredentialsProvider{
-				Value: aws.Credentials{
-					AccessKeyID:     s3Config.accessKeyID,
-					SecretAccessKey: s3Config.accessKeySecret,
-				},
+	cfg := aws.Config{
+		Region: s3Config.region,
+		Credentials: credentials.StaticCredentialsProvider{
+			Value: aws.Credentials{
+				AccessKeyID:     s3Config.accessKeyID,
+				SecretAccessKey: s3Config.accessKeySecret,
 			},
-		),
-		config.WithEndpointResolverWithOptions(
-			aws.EndpointResolverWithOptionsFunc(
-				func(
-					service, region string,
-					options ...interface{},
-				) (aws.Endpoint, error) {
-					return aws.Endpoint{URL: s3Config.defaultBaseURL}, nil
-				},
-			),
-		),
-	)
-
-	if err != nil {
-		panic(err)
+		},
+		BearerAuthTokenProvider:     nil,
+		HTTPClient:                  nil,
+		EndpointResolver:            nil,
+		EndpointResolverWithOptions: nil,
+		RetryMaxAttempts:            0,
+		RetryMode:                   "",
+		Retryer:                     nil,
+		ConfigSources:               nil,
+		APIOptions:                  nil,
+		Logger:                      nil,
+		ClientLogMode:               0,
+		DefaultsMode:                "",
+		RuntimeEnvironment:          aws.RuntimeEnvironment{},
+		AppID:                       "",
 	}
 
 	return &s3Client{

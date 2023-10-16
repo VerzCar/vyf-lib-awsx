@@ -12,12 +12,12 @@ type AuthRequestConfig struct {
 }
 
 type awsConfig struct {
-	accessKeyID       string
-	accessKeySecret   string
-	region            string
-	defaultBucketName string
-	uploadTimeout     int
-	defaultBaseURL    string
+	accessKeyID     string
+	accessKeySecret string
+	region          string
+	bucketName      string
+	uploadTimeout   int
+	defaultBaseURL  string
 }
 
 type S3RequestConfig struct {
